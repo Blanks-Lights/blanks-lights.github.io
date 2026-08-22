@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Blanks Lights - Arcade</title>
+  <style>
+    :root {
+      --bg-dark: #0b0c10;
+      --color-1: #0062ff;
+      --color-2: #b700ff;
+      --color-white: #ffffff;
+      --gradient-primary: linear-gradient(135deg, var(--color-1), var(--color-2));
+    }
+
+    * { 
+      box-sizing: border-box; 
+      /* Prevent text selection and default touch highlighting zoom behaviors */
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    html, body {
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--bg-dark);
+      color: var(--color-white);
+      text-align: center;
+      padding: 10px 15px env(safe-area-inset-bottom, 10px);
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+
+    body.warning-aura { box-shadow: inset 0 0 40px 10px #ffea00; }
+
+    /* Top Navigation bar cleanly aligned */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+      padding: 5px 0;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px solid transparent;
+      border-image: linear-gradient(135deg, #0062ff, #b700ff) 1;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #0062ff, #b700ff);
+      box-shadow: 0 4px 10px rgba(0, 98, 255, 0.2);
+    }
+
+    h1 {
+      font-size: clamp(1.2rem, 3.5vh, 1.7rem);
+      margin: 0;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      flex-shrink: 0;
+    }
+
+    p { 
+      font-size: clamp(0.75rem, 1.8vh, 0.88rem); 
+      color: #a0a5b5; 
+      margin: 0; 
+      flex-shrink: 0;
+      max-width: 360px;
+      padding: 0 5px;
+    }
+
+    .tab-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      background: #1f2833;
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid #2d3748;
+      width: 100%;
+      max-width: 360px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #a0a5b5;
+      padding: 6px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: clamp(0.68rem, 1.6vh, 0.78rem);
+      transition: all 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-btn.active {
+      background: var(--gradient-primary);
+      color: var(--color-white);
+      box-shadow: 0 2px 8px rgba(183, 0, 255, 0.4);
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 10px;
+      font-size: clamp(0.8rem, 2vh, 0.95rem);
+      font-weight: bold;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .score-box {
+      background: #1f2833;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid #2d3748;
+    }
+
+    .score-box span { color: var(--color-1); }
+
+    .lives-counter {
+      color: #ff3366;
+      letter-spacing: 1px;
+    }
+
+    /* Fixed Aspect Ratio & Consistent Grid Layout */
+    .grid-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      flex-grow: 1;
+      max-height: 42vh;
+      min-height: 200px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: min(36vh, 280px);
+      height: min(36vh, 280px);
+    }
+
+    .light-btn {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      opacity: 0.25;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      background-color: #1f2833;
+    }
+
+    .light-btn:active { transform: scale(0.95); }
+    .light-btn.active { opacity: 1; }
+    .light-btn.trap {
+      background: #ff0033 !important;
+      opacity: 1;
+      box-shadow: 0 0 25px #ff0033;
+    }
+    .light-btn.bonus {
+      background: #00ff66 !important;
+      opacity: 1;
+      box-shadow: 0 0 25px #00ff66;
+    }
+
+    .light-btn.warning-pulse { animation: flashWarning 0.25s infinite alternate; }
+
+    @keyframes flashWarning {
+      0% { border-color: #ffea00; box-shadow: 0 0 12px #ffea00; }
+      100% { border-color: #ffffff; box-shadow: 0 0 20px #ffea00; }
+    }
+
+    #pad-0 { background: var(--color-1); }
+    #pad-0.active { box-shadow: 0 0 25px var(--color-1); }
+    #pad-1 { background: var(--color-2); }
+    #pad-1.active { box-shadow: 0 0 25px var(--color-2); }
+    #pad-2 { background: #00f0ff; }
+    #pad-2.active { box-shadow: 0 0 25px #00f0ff; }
+    #pad-3 { background: #ff007f; }
+    #pad-3.active { box-shadow: 0 0 25px #ff007f; }
+
+    .arena-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      flex-grow: 1;
+      max-height: 42vh;
+    }
+
+    .lives-display {
+      font-size: clamp(1rem, 2.2vh, 1.2rem);
+      font-weight: bold;
+      margin-bottom: 4px;
+      letter-spacing: 2px;
+    }
+
+    #canvas-arena {
+      width: min(36vh, 280px);
+      height: min(36vh, 280px);
+      background: #12161f;
+      border: 2px solid #2d3748;
+      border-radius: 16px;
+    }
+
+    #status-msg {
+      font-weight: bold;
+      font-size: clamp(0.8rem, 2vh, 0.95rem);
+      flex-shrink: 0;
+      min-height: 20px;
+    }
+
+    .controls { 
+      display: flex; 
+      gap: 10px; 
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      margin-bottom: 5px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      font-size: clamp(0.85rem, 2vh, 0.95rem);
+      font-weight: bold;
+      color: var(--color-white);
+      background: var(--gradient-primary);
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(183, 0, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: #1f2833;
+      border: 1px solid #2d3748;
+      box-shadow: none;
+    }
+
+    /* Instructions Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 12, 16, 0.85);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #1f2833;
+      border: 2px solid #2d3748;
+      border-image: linear-gradient(135deg, #0062ff, #b700ff) 1;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 360px;
+      width: 100%;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .modal-content p {
+      color: #c5c8d4;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .close-modal-btn {
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px;
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body onclick="ensureAudioCtx()">
+
+  <div class="top-nav">
+    <a href="index.html" class="nav-btn">←Home</a>
+    <h1>Blanks Lights</h1>
+    <div style="width: 55px;"></div> </div>
+
+  <p id="game-desc">Select a light game to play!</p>
+
+  <div class="tab-container">
+    <button class="tab-btn active" id="tab-memory" onclick="switchGame('memory')">Memory</button>
+    <button class="tab-btn" id="tab-speed" onclick="switchGame('speed')">Speed</button>
+    <button class="tab-btn" id="tab-dj" onclick="switchGame('dj')">DJ</button>
+    <button class="tab-btn" id="tab-dodge" onclick="switchGame('dodge')">Red Light</button>
+    <button class="tab-btn" id="tab-flash" onclick="switchGame('flash')">Flash</button>
+    <button class="tab-btn" id="tab-decay" onclick="switchGame('decay')">Decay</button>
+    <button class="tab-btn" id="tab-catcher" onclick="switchGame('catcher')">Catcher</button>
+  </div>
+
+  <div class="scoreboard" id="scoreboard">
+    <div class="score-box"><span id="metric-1-label">Score</span>: <span id="metric-1-val">0</span></div>
+    <div class="score-box"><span id="metric-2-label">Top Score</span>: <span id="metric-2-val">0</span></div>
+    <div class="score-box" id="dodge-lives-box" style="display: none;">Lives: <span class="lives-counter" id="dodge-lives-val">❤️ ❤️ ❤️</span></div>
+  </div>
+
+  <div class="grid-wrapper" id="grid-wrapper">
+    <div class="grid" id="pad-grid">
+      <button class="light-btn" id="pad-0" onclick="handlePadClick(0)"></button>
+      <button class="light-btn" id="pad-1" onclick="handlePadClick(1)"></button>
+      <button class="light-btn" id="pad-2" onclick="handlePadClick(2)"></button>
+      <button class="light-btn" id="pad-3" onclick="handlePadClick(3)"></button>
+    </div>
+  </div>
+
+  <div class="arena-wrapper" id="arena-wrapper">
+    <div class="lives-display" id="lives-display">❤️ ❤️ ❤️</div>
+    <canvas id="canvas-arena" width="280" height="280"></canvas>
+  </div>
+
+  <div id="status-msg">Select a mode and press Start!</div>
+
+  <div class="controls">
+    <button class="btn" id="start-btn" onclick="toggleGameAction()">Start Game</button>
+    <button class="btn btn-secondary" id="action-btn" onclick="handleSecondaryAction()" style="display: none;">Playback</button>
+    <button class="nav-btn" id="help-btn" onclick="toggleHelpModal(event)" style="padding: 10px 14px; font-weight: bold;">?</button>
+  </div>
+
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <h2 id="modal-title">How to Play</h2>
+      <p id="modal-desc">Select a game mode to learn how to play!</p>
+      <button class="close-modal-btn" onclick="toggleHelpModal(event)">Got It!</button>
+    </div>
+  </div>
+
+  <script>
+    let currentGame = 'memory'; 
+    let isGameActive = false;
+
+    // UI Elements
+    const gameDesc = document.getElementById('game-desc');
+    const scoreboard = document.getElementById('scoreboard');
+    const metric1Label = document.getElementById('metric-1-label');
+    const metric2Label = document.getElementById('metric-2-label');
+    const metric1Val = document.getElementById('metric-1-val');
+    const metric2Val = document.getElementById('metric-2-val');
+    const statusMsg = document.getElementById('status-msg');
+    const startBtn = document.getElementById('start-btn');
+    const actionBtn = document.getElementById('action-btn');
+    const gridWrapper = document.getElementById('grid-wrapper');
+    const arenaWrapper = document.getElementById('arena-wrapper');
+    const livesDisplay = document.getElementById('lives-display');
+    const dodgeLivesBox = document.getElementById('dodge-lives-box');
+    const dodgeLivesVal = document.getElementById('dodge-lives-val');
+    const helpModal = document.getElementById('help-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+
+    const gameInstructions = {
+      memory: { title: "Memory Mode", text: "Watch and repeat the exact sequence of glowing neon pads. The pattern grows longer with each successful round!" },
+      speed: { title: "Speed Tap", text: "Tap target lights as fast as you can before the 15-second timer runs out. Accuracy and speed are key!" },
+      dj: { title: "Light DJ", text: "Tap pads freely to make music and lights, or press 'Record Sequence' to record your own custom looping light show and play it back!" },
+      dodge: { title: "Red Light Mode", text: "Tap normal lights! Avoid red traps, catch fast green bonuses, and stay sharp as speed increases!" },
+      flash: { title: "Pattern Flash", text: "Memorize rapidly flashing lighting combinations and match them correctly. The sequence speeds up as your score increases." },
+      decay: { title: "Pad Decay", text: "Pads decay and lose energy quickly! Tap fading pads before they go completely dark to keep the streak alive." },
+      catcher: { title: "Beam Catcher", text: "Move your paddle across the bottom to catch colored beams and hearts while dodging red items." }
+    };
+
+    function toggleHelpModal(e) {
+      if (e) e.stopPropagation();
+      if (helpModal.style.display === 'flex') {
+        helpModal.style.display = 'none';
+      } else {
+        const info = gameInstructions[currentGame] || { title: "How to Play", text: "Select a game mode to view rules." };
+        modalTitle.textContent = info.title;
+        modalDesc.textContent = info.text;
+        helpModal.style.display = 'flex';
+      }
+    }
+
+    // Game States
+    let sequence = [], playerSequence = [], memoryRound = 0, memoryBest = 0, isPlayingSequence = false;
+    let speedScore = 0, speedBest = 0, timeLeft = 15, currentTarget = -1, speedTimer = null;
+    let isRecording = false, isPlayingRecorded = false, recordedTracks = [], recordStartTime = 0;
+    
+    // Red Light state updates
+    let dodgeScore = 0, dodgeBest = 0, dodgeTargets = [], isDodgeTrap = false, isDodgeBonus = false;
+    let dodgeAutoTimer = null, dodgeWarningTimer = null, dodgeNormalSpawnTimer = null;
+    let dodgeLives = 3;
+
+    let flashRound = 0, flashBest = 0, flashPattern = [], flashInput = [];
+    let decayScore = 0, decayBest = 0, padEnergy = [100, 100, 100, 100], decayTimer = null;
+
+    // Beam Catcher State
+    const canvas = document.getElementById('canvas-arena');
+    const ctx = canvas.getContext('2d');
+    let paddleX = 115, drops = [], catcherTimer = null, catcherScore = 0, catcherBest = 0, lives = 3;
+    let spawnCooldown = 0;
+    const beamColors = ['#0062ff', '#b700ff', '#00f0ff', '#ff007f'];
+
+    function renderHearts(count) {
+      let heartsStr = '';
+      for (let i = 0; i < count; i++) heartsStr += '❤️ ';
+      return heartsStr.trim() || '💔';
+    }
+
+    function switchGame(gameMode) {
+      ensureAudioCtx();
+      resetGame();
+      currentGame = gameMode;
+
+      ['memory', 'speed', 'dj', 'dodge', 'flash', 'decay', 'catcher'].forEach(mode => {
+        document.getElementById(`tab-${mode}`).classList.toggle('active', gameMode === mode);
+      });
+
+      gridWrapper.style.display = 'flex';
+      arenaWrapper.style.display = 'none';
+      scoreboard.style.display = 'flex';
+      actionBtn.style.display = 'none';
+      dodgeLivesBox.style.display = (gameMode === 'dodge') ? 'block' : 'none';
+
+      if (gameMode === 'dj') {
+        startBtn.textContent = "Record";
+      } else {
+        startBtn.textContent = "Start Game";
+      }
+
+      if (gameMode === 'memory') {
+        gameDesc.textContent = "Follow the neon rhythm to keep the light show alive!";
+        metric1Label.textContent = "Round"; metric2Label.textContent = "Top";
+        metric1Val.textContent = memoryRound; metric2Val.textContent = memoryBest;
+      } else if (gameMode === 'speed') {
+        gameDesc.textContent = "Tap glowing pads as quickly as possible before time runs out!";
+        metric1Label.textContent = "Score"; metric2Label.textContent = "Time";
+        metric1Val.textContent = speedScore; metric2Val.textContent = timeLeft + "s";
+      } else if (gameMode === 'dj') {
+        gameDesc.textContent = "Tap pads to make music, or record your own light sequence!";
+        scoreboard.style.display = 'none';
+        actionBtn.style.display = 'inline-block';
+        actionBtn.textContent = "Play";
+        statusMsg.textContent = "Free Play active! Tap pads anytime.";
+      } else if (gameMode === 'dodge') {
+        gameDesc.textContent = "Tap normal lights! Red traps show normal lights 0.2s after.";
+        metric1Label.textContent = "Score"; metric2Label.textContent = "Top";
+        metric1Val.textContent = dodgeScore; metric2Val.textContent = dodgeBest;
+        dodgeLivesVal.textContent = renderHearts(dodgeLives);
+      } else if (gameMode === 'flash') {
+        gameDesc.textContent = "Watch the quick flash combination and repeat it!";
+        metric1Label.textContent = "Round"; metric2Label.textContent = "Top";
+        metric1Val.textContent = flashRound; metric2Val.textContent = flashBest;
+      } else if (gameMode === 'decay') {
+        gameDesc.textContent = "Pads decay fast! Tap fading pads quickly to keep them alive.";
+        metric1Label.textContent = "Score"; metric2Label.textContent = "Top";
+        metric1Val.textContent = decayScore; metric2Val.textContent = decayBest;
+      } else if (gameMode === 'catcher') {
+        gameDesc.textContent = "Catch colored beams & hearts smoothly with your paddle.";
+        gridWrapper.style.display = 'none';
+        arenaWrapper.style.display = 'flex';
+        metric1Label.textContent = "Score"; metric2Label.textContent = "Top";
+        metric1Val.textContent = catcherScore; metric2Val.textContent = catcherBest;
+        livesDisplay.innerHTML = renderHearts(lives);
+      }
+
+      if (gameMode !== 'dj') {
+        statusMsg.textContent = "Press Start to play!";
+      }
+    }
+
+    function toggleGameAction() {
+      ensureAudioCtx();
+      if (isGameActive) {
+        resetGame();
+        statusMsg.textContent = "Game stopped.";
+      } else {
+        startGame();
+      }
+    }
+
+    function startGame() {
+      isGameActive = true;
+      if (currentGame === 'dj') {
+        toggleDJRecord();
+        return;
+      }
+      startBtn.textContent = "Stop";
+
+      if (currentGame === 'memory') startMemoryGame();
+      else if (currentGame === 'speed') startSpeedGame();
+      else if (currentGame === 'dodge') startDodgeGame();
+      else if (currentGame === 'flash') startFlashGame();
+      else if (currentGame === 'decay') startDecayGame();
+      else if (currentGame === 'catcher') startCatcher();
+    }
+
+    function resetGame() {
+      isGameActive = false;
+      isPlayingSequence = false;
+      isRecording = false;
+      isPlayingRecorded = false;
+      clearInterval(speedTimer);
+      clearInterval(decayTimer);
+      clearInterval(catcherTimer);
+      clearTimeout(dodgeAutoTimer);
+      clearTimeout(dodgeWarningTimer);
+      clearTimeout(dodgeNormalSpawnTimer);
+      clearAllPads();
+      drops = [];
+      document.body.classList.remove('warning-aura');
+      actionBtn.disabled = false;
+
+      if (currentGame === 'dj') {
+        startBtn.textContent = "Record";
+      } else {
+        startBtn.textContent = "Start Game";
+      }
+    }
+
+    /* --- MEMORY --- */
+    function startMemoryGame() {
+      sequence = []; playerSequence = []; memoryRound = 0;
+      statusMsg.textContent = "Watch the sequence...";
+      nextMemoryRound();
+    }
+
+    function nextMemoryRound() {
+      playerSequence = []; memoryRound++; metric1Val.textContent = memoryRound;
+      if (memoryRound - 1 > memoryBest) { memoryBest = memoryRound - 1; metric2Val.textContent = memoryBest; }
+      sequence.push(Math.floor(Math.random() * 4)); playSequence();
+    }
+
+    function playSequence() {
+      isPlayingSequence = true; let i = 0;
+      const interval = setInterval(() => {
+        if (!isGameActive) { clearInterval(interval); return; }
+        flashPad(sequence[i]); i++;
+        if (i >= sequence.length) {
+          clearInterval(interval);
+          setTimeout(() => { if(isGameActive) { isPlayingSequence = false; statusMsg.textContent = "Your turn!"; } }, 400);
+        }
+      }, 550);
+    }
+
+    /* --- SPEED TAP --- */
+    function startSpeedGame() {
+      speedScore = 0; timeLeft = 15; 
+      metric1Val.textContent = speedScore; metric2Val.textContent = timeLeft + "s";
+      statusMsg.textContent = "Tap glowing lights!"; spawnNextTarget();
+      speedTimer = setInterval(() => {
+        timeLeft--; metric2Val.textContent = timeLeft + "s";
+        if (timeLeft <= 0) { resetGame(); statusMsg.textContent = `Time's up! Score: ${speedScore}`; if (speedScore > speedBest) { speedBest = speedScore; metric2Val.textContent = speedBest; } }
+      }, 1000);
+    }
+
+    function spawnNextTarget() {
+      clearAllPads(); let next;
+      do { next = Math.floor(Math.random() * 4); } while (next === currentTarget);
+      currentTarget = next; document.getElementById(`pad-${currentTarget}`).classList.add('active');
+    }
+
+    /* --- LIGHT DJ --- */
+    function toggleDJRecord() {
+      if (isPlayingRecorded) return;
+      if (!isRecording) {
+        isRecording = true; recordedTracks = []; recordStartTime = Date.now();
+        startBtn.textContent = "Stop"; statusMsg.textContent = "Recording light show..."; actionBtn.disabled = true;
+      } else {
+        isRecording = false; startBtn.textContent = "Record"; actionBtn.disabled = false;
+        statusMsg.textContent = `Recorded ${recordedTracks.length} notes! Press Play.`;
+      }
+    }
+
+    function handleSecondaryAction() {
+      if (currentGame === 'dj' && recordedTracks.length > 0) playDJLoop();
+    }
+
+    function playDJLoop() {
+      if (isRecording || isPlayingRecorded) return;
+      isPlayingRecorded = true; startBtn.disabled = true; actionBtn.disabled = true;
+      statusMsg.textContent = "Playing back...";
+      recordedTracks.forEach((note) => { setTimeout(() => { flashPad(note.pad); }, note.time); });
+      setTimeout(() => { isPlayingRecorded = false; startBtn.disabled = false; actionBtn.disabled = false; statusMsg.textContent = "Playback complete!"; }, recordedTracks[recordedTracks.length - 1].time + 500);
+    }
+
+    /* --- RED LIGHT (DODGE) --- */
+    function startDodgeGame() {
+      dodgeScore = 0; 
+      dodgeLives = 3;
+      metric1Val.textContent = dodgeScore; 
+      metric2Val.textContent = dodgeBest;
+      dodgeLivesVal.textContent = renderHearts(dodgeLives);
+      spawnDodgeTarget();
+    }
+
+    function handleDodgeTimeout() {
+      if (!isGameActive || currentGame !== 'dodge') return;
+      
+      if (!isDodgeBonus) {
+        dodgeLives--;
+        dodgeLivesVal.textContent = renderHearts(dodgeLives);
+        triggerRedFlash();
+        playRedSound();
+        if (dodgeLives <= 0) {
+          if (dodgeScore > dodgeBest) { dodgeBest = dodgeScore; metric2Val.textContent = dodgeBest; }
+          resetGame();
+          playGameOverSound();
+          statusMsg.textContent = `Time out! Game Over. Score: ${dodgeScore}`;
+          return;
+        }
+      }
+      spawnDodgeTarget();
+    }
+
+    function spawnDodgeTarget() {
+      clearAllPads();
+      clearTimeout(dodgeAutoTimer);
+      clearTimeout(dodgeWarningTimer);
+      clearTimeout(dodgeNormalSpawnTimer);
+      document.body.classList.remove('warning-aura');
+
+      if (!isGameActive) return;
+
+      // Make red much more common as score increases (starts at 35%, caps at 75%)
+      const redProbability = Math.min(0.75, 0.35 + (dodgeScore * 0.02));
+      const greenProbability = Math.max(0.02, 0.08 - (dodgeScore * 0.003));
+
+      const randType = Math.random();
+      isDodgeBonus = !isDodgeTrap && (randType < greenProbability);
+      isDodgeTrap = !isDodgeBonus && (randType < (greenProbability + redProbability));
+
+      // Timeout & warning speeds become faster as score rises (slower floor for playability: 1100ms)
+      const shiftSpeed = Math.max(1100, 2500 - (dodgeScore * 45));
+      const warningTimeBeforeEnd = Math.min(500, 200 + (dodgeScore * 10));
+
+      if (isDodgeBonus) {
+        let next;
+        do { next = Math.floor(Math.random() * 4); } while (dodgeTargets.includes(next));
+        dodgeTargets = [next];
+        document.getElementById(`pad-${next}`).classList.add('bonus');
+        statusMsg.textContent = "BONUS GREEN! Tap for extra life!";
+
+        dodgeAutoTimer = setTimeout(() => {
+          if (isGameActive && currentGame === 'dodge') {
+            spawnDodgeTarget();
+          }
+        }, shiftSpeed);
+
+      } else if (isDodgeTrap) {
+        let trapPad = Math.floor(Math.random() * 4);
+        dodgeTargets = [trapPad];
+        document.getElementById(`pad-${trapPad}`).classList.add('trap');
+        statusMsg.textContent = "RED LIGHT! Normal light coming...";
+
+        // Normal light shows up precisely 0.2 seconds (200ms) after the red trap appears
+        dodgeNormalSpawnTimer = setTimeout(() => {
+          if (!isGameActive || currentGame !== 'dodge') return;
+          let normalPad;
+          do { normalPad = Math.floor(Math.random() * 4); } while (normalPad === trapPad);
+          dodgeTargets.push(normalPad);
+          document.getElementById(`pad-${normalPad}`).classList.add('active');
+          statusMsg.textContent = "Tap normal, avoid red trap!";
+        }, 200);
+
+        dodgeWarningTimer = setTimeout(() => {
+          if (isGameActive && currentGame === 'dodge') {
+            document.body.classList.add('warning-aura');
+            // Flash active normal lights for warning
+            dodgeTargets.forEach(t => {
+              if (!document.getElementById(`pad-${t}`).classList.contains('trap')) {
+                document.getElementById(`pad-${t}`).classList.add('warning-pulse');
+              }
+            });
+          }
+        }, Math.max(200, shiftSpeed - warningTimeBeforeEnd));
+
+        dodgeAutoTimer = setTimeout(() => {
+          handleDodgeTimeout();
+        }, shiftSpeed);
+
+      } else {
+        let next;
+        do { next = Math.floor(Math.random() * 4); } while (dodgeTargets.includes(next));
+        dodgeTargets = [next];
+        document.getElementById(`pad-${next}`).classList.add('active');
+        statusMsg.textContent = "Tap the glowing light!";
+
+        dodgeWarningTimer = setTimeout(() => {
+          if (isGameActive && currentGame === 'dodge') {
+            document.body.classList.add('warning-aura');
+            document.getElementById(`pad-${next}`).classList.add('warning-pulse');
+          }
+        }, Math.max(200, shiftSpeed - warningTimeBeforeEnd));
+
+        dodgeAutoTimer = setTimeout(() => {
+          handleDodgeTimeout();
+        }, shiftSpeed);
+      }
+    }
+
+    /* --- PATTERN FLASH --- */
+    function startFlashGame() {
+      flashRound = 0; nextFlashRound();
+    }
+
+    function nextFlashRound() {
+      flashInput = []; flashRound++; metric1Val.textContent = flashRound;
+      if (flashRound - 1 > flashBest) { flashBest = flashRound - 1; metric2Val.textContent = flashBest; }
+      flashPattern = []; const patternLength = Math.min(2 + Math.floor(flashRound / 2), 6);
+      for (let i = 0; i < patternLength; i++) flashPattern.push(Math.floor(Math.random() * 4));
+      statusMsg.textContent = "Memorize..."; isPlayingSequence = true;
+      setTimeout(() => {
+        if(!isGameActive) return;
+        let idx = 0;
+        const interval = setInterval(() => {
+          if(!isGameActive) { clearInterval(interval); return; }
+          flashPad(flashPattern[idx]); idx++;
+          if (idx >= flashPattern.length) {
+            clearInterval(interval);
+            setTimeout(() => { if(isGameActive) { isPlayingSequence = false; statusMsg.textContent = "Recreate pattern!"; } }, 300);
+          }
+        }, Math.max(300, 600 - flashRound * 30));
+      }, 800);
+    }
+
+    /* --- PAD DECAY --- */
+    function startDecayGame() {
+      decayScore = 0; padEnergy = [100, 100, 100, 100]; 
+      metric1Val.textContent = decayScore; statusMsg.textContent = "Pads decay fast! Keep them glowing!";
+      decayTimer = setInterval(() => {
+        let allAlive = true;
+        for (let i = 0; i < 4; i++) {
+          padEnergy[i] -= Math.random() * 4.5 + 3.0;
+          document.getElementById(`pad-${i}`).style.opacity = Math.max(0.05, padEnergy[i] / 100);
+          if (padEnergy[i] <= 0) allAlive = false;
+        }
+        if (!allAlive) { resetGame(); statusMsg.textContent = `Light went dark! Score: ${decayScore}`; if (decayScore > decayBest) { decayBest = decayScore; metric2Val.textContent = decayBest; } triggerRedFlash(); playGameOverSound(); }
+        else { decayScore++; metric1Val.textContent = decayScore; }
+      }, 150);
+    }
+
+    /* --- BEAM CATCHER --- */
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      paddleX = (e.clientX - rect.left) * scaleX - 25;
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        paddleX = (e.touches[0].clientX - rect.left) * scaleX - 25;
+      }
+    });
+
+    function startCatcher() {
+      catcherScore = 0; lives = 3; drops = []; spawnCooldown = 0;
+      metric1Val.textContent = catcherScore; 
+      metric2Val.textContent = catcherBest;
+      livesDisplay.innerHTML = renderHearts(lives);
+      statusMsg.textContent = "Catch colored beams & hearts!";
+      
+      catcherTimer = setInterval(() => {
+        if (!isGameActive) return;
+
+        ctx.clearRect(0, 0, 280, 280);
+
+        const currentSpeed = Math.min(18.0, 4.5 + (catcherScore / 10) * 0.2);
+        const requiredCooldown = Math.max(5, Math.floor(150 / currentSpeed));
+
+        if (spawnCooldown > 0) {
+          spawnCooldown--;
+        } else {
+          if (Math.random() < 0.35) {
+            spawnCooldown = requiredCooldown;
+
+            const heartOnScreen = drops.some(d => d.isHeart);
+            const isHeart = (lives < 5) && !heartOnScreen && (Math.random() < 0.04);
+            
+            let redProbability = 0;
+            if (catcherScore >= 40 && !isHeart) {
+              redProbability = Math.min(0.18, 0.05 + (catcherScore - 40) * 0.0015);
+            }
+            
+            const isRedTrap = !isHeart && Math.random() < redProbability;
+            const padColorIndex = Math.floor(Math.random() * beamColors.length);
+            
+            drops.push({
+              x: Math.random() * 230 + 25,
+              y: 0,
+              speed: currentSpeed,
+              color: isHeart ? '#ff3366' : (isRedTrap ? '#ff0033' : beamColors[padColorIndex]),
+              isRed: isRedTrap,
+              isHeart: isHeart,
+              colorIndex: padColorIndex
+            });
+          }
+        }
+
+        // Paddle
+        ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 10; ctx.shadowColor = "#ffffff";
+        ctx.fillRect(paddleX, 260, 50, 8);
+
+        // Draw & update drops
+        for (let i = drops.length - 1; i >= 0; i--) {
+          let d = drops[i];
+          if (!d) continue;
+
+          d.y += d.speed;
+          
+          if (d.isHeart) {
+            ctx.font = "16px Arial";
+            ctx.fillText("💖", d.x - 8, d.y + 6);
+          } else {
+            ctx.fillStyle = d.color; 
+            ctx.shadowColor = d.color;
+            ctx.beginPath(); 
+            ctx.arc(d.x, d.y, 6, 0, Math.PI * 2); 
+            ctx.fill();
+          }
+
+          // Catch collision box
+          if (d.y >= 252 && d.y <= 270 && d.x >= paddleX - 4 && d.x <= paddleX + 54) {
+            if (d.isHeart) {
+              if (lives < 5) lives++;
+              livesDisplay.innerHTML = renderHearts(lives);
+              playHappyHeartSound();
+              drops.splice(i, 1);
+            } else if (d.isRed) {
+              drops.splice(i, 1);
+              lives--;
+              livesDisplay.innerHTML = renderHearts(lives);
+              triggerRedFlash();
+              if (lives <= 0) {
+                if (catcherScore > catcherBest) { catcherBest = catcherScore; metric2Val.textContent = catcherBest; }
+                resetGame(); 
+                playGameOverSound();
+                statusMsg.textContent = `Hit red beam! Game Over. Score: ${catcherScore}`;
+                break;
+              } else {
+                playRedSound();
+              }
+            } else {
+              catcherScore += 10; 
+              metric1Val.textContent = catcherScore; 
+              if (catcherScore > catcherBest) { catcherBest = catcherScore; metric2Val.textContent = catcherBest; }
+              playTone(d.colorIndex);
+              drops.splice(i, 1);
+            }
+          } 
+          // Off-screen miss
+          else if (d.y > 280) {
+            const missedRed = d.isRed;
+            const missedHeart = d.isHeart;
+            drops.splice(i, 1);
+
+            if (!missedRed && !missedHeart) {
+              lives--; 
+              livesDisplay.innerHTML = renderHearts(lives);
+              triggerRedFlash();
+              if (lives <= 0) {
+                if (catcherScore > catcherBest) { catcherBest = catcherScore; metric2Val.textContent = catcherBest; }
+                resetGame(); 
+                playGameOverSound();
+                statusMsg.textContent = `Out of hearts! Score: ${catcherScore}`;
+                break;
+              } else {
+                playRedSound();
+              }
+            }
+          }
+        }
+      }, 30);
+    }
+
+    /* --- PAD INPUT HANDLING --- */
+    function handlePadClick(index) {
+      ensureAudioCtx();
+      if (!isGameActive) return;
+
+      if (currentGame === 'memory') {
+        if (isPlayingSequence) return;
+        flashPad(index); playerSequence.push(index);
+        const curr = playerSequence.length - 1;
+        if (playerSequence[curr] !== sequence[curr]) { resetGame(); statusMsg.textContent = "Wrong light!"; triggerRedFlash(); playGameOverSound(); return; }
+        if (playerSequence.length === sequence.length) { isPlayingSequence = true; statusMsg.textContent = "Great job!"; setTimeout(nextMemoryRound, 900); }
+      } else if (currentGame === 'speed') {
+        if (index === currentTarget) { playTone(index); speedScore++; metric1Val.textContent = speedScore; spawnNextTarget(); }
+      } else if (currentGame === 'dj') {
+        if (isPlayingRecorded) return;
+        flashPad(index);
+        if (isRecording) recordedTracks.push({ pad: index, time: Date.now() - recordStartTime });
+      } else if (currentGame === 'dodge') {
+        const clickedPad = document.getElementById(`pad-${index}`);
+        
+        if (clickedPad.classList.contains('trap')) {
+          dodgeLives--;
+          dodgeLivesVal.textContent = renderHearts(dodgeLives);
+          triggerRedFlash();
+          playRedSound();
+          if (dodgeLives <= 0) {
+            if (dodgeScore > dodgeBest) { dodgeBest = dodgeScore; metric2Val.textContent = dodgeBest; }
+            resetGame();
+            playGameOverSound();
+            statusMsg.textContent = `Hit a Red Light! Game Over. Score: ${dodgeScore}`;
+          } else {
+            spawnDodgeTarget();
+          }
+        } else if (clickedPad.classList.contains('bonus')) {
+          if (dodgeLives < 5) dodgeLives++;
+          dodgeLivesVal.textContent = renderHearts(dodgeLives);
+          playHappyHeartSound();
+          dodgeScore += 5;
+          metric1Val.textContent = dodgeScore;
+          if (dodgeScore > dodgeBest) {
+            dodgeBest = dodgeScore;
+            metric2Val.textContent = dodgeBest;
+          }
+          spawnDodgeTarget();
+        } else if (dodgeTargets.includes(index)) {
+          playTone(index);
+          dodgeScore++;
+          metric1Val.textContent = dodgeScore;
+          if (dodgeScore > dodgeBest) {
+            dodgeBest = dodgeScore;
+            metric2Val.textContent = dodgeBest;
+          }
+          spawnDodgeTarget();
+        }
+      } else if (currentGame === 'flash') {
+        if (isPlayingSequence) return;
+        flashPad(index); flashInput.push(index);
+        const curr = flashInput.length - 1;
+        if (flashInput[curr] !== flashPattern[curr]) { resetGame(); statusMsg.textContent = "Wrong pattern!"; triggerRedFlash(); playGameOverSound(); return; }
+        if (flashInput.length === flashPattern.length) { isPlayingSequence = true; statusMsg.textContent = "Correct!"; setTimeout(nextFlashRound, 1000); }
+      } else if (currentGame === 'decay') {
+        padEnergy[index] = 100; playTone(index); document.getElementById(`pad-${index}`).style.opacity = 1;
+      }
+    }
+
+    function flashPad(index) {
+      const pad = document.getElementById(`pad-${index}`);
+      pad.classList.add('active'); pad.style.opacity = 1; playTone(index);
+      setTimeout(() => { pad.classList.remove('active'); if (currentGame !== 'decay') pad.style.opacity = ''; }, 350);
+    }
+
+    function clearAllPads() {
+      for (let i = 0; i < 4; i++) {
+        const pad = document.getElementById(`pad-${i}`);
+        pad.style.opacity = ''; pad.classList.remove('active', 'trap', 'bonus', 'warning-pulse');
+      }
+    }
+
+    function triggerRedFlash() {
+      document.body.style.backgroundColor = '#3a0010';
+      setTimeout(() => { document.body.style.backgroundColor = 'var(--bg-dark)'; }, 400);
+    }
+
+    /* --- AUDIO SYSTEM --- */
+    let audioCtx = null;
+    const frequencies = [261.63, 329.63, 392.00, 523.25];
+
+    function ensureAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(padIndex) {
+      ensureAudioCtx();
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = frequencies[padIndex];
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+    }
+
+    function playHappyHeartSound() {
+      ensureAudioCtx();
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.25);
+        }, idx * 60);
+      });
+    }
+
+    function playRedSound() {
+      ensureAudioCtx();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(130, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function playGameOverSound() {
+      ensureAudioCtx();
+      const notes = [400, 320, 250, 180];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.28);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.28);
+        }, idx * 90);
+      });
+    }
+  </script>
+
+   <script>
+        // Intercept page close, refresh, or navigation
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = ''; // Triggers the generic browser warning
+        });
+    </script>
+
+  
+</body>
+</html>
