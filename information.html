@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blanks Lights | Info</title>
+    <style>
+        /* Base Reset & Variables */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* DEFAULT / OTHER THEME (Blue & Purple) */
+        :root {
+            --bg-dark: #0b0c10;
+            --color-1: #0062ff; /* Primary accent */
+            --color-2: #b700ff; /* Secondary accent */
+            --color-white: #ffffff;
+            --text-active-color: var(--color-white); /* Default text stays white on active buttons */
+            --gradient-primary: linear-gradient(135deg, var(--color-1), var(--color-2));
+        }
+
+        /* NEW CUSTOM CHRISTMAS THEME (Red, White, & Green) */
+        [data-theme="christmas"] {
+            --gradient-primary: linear-gradient(135deg, #ff0000, #ffffff, #00ff00);
+            --text-active-color: #000000; /* Text turns black when background contains bright white */
+        }
+
+        /* HALLOWEEN THEME (Orange, Purple, & Green) */
+        [data-theme="halloween"] {
+            --gradient-primary: linear-gradient(135deg, #fc8800, #6900fc, #00fc00);
+            --text-active-color: #000000; /* Text turns black when background is very bright neon */
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--color-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+
+        /* Top Left Home Button */
+        .home-button {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-white);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-image: var(--gradient-primary) 1;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .home-button:hover {
+            transform: translateY(-2px);
+            background: var(--gradient-primary);
+            color: var(--text-active-color);
+            box-shadow: 0 5px 10px rgba(0, 98, 255, 0.2);
+        }
+
+        /* Header / Logo Layout */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+            margin-top: 2rem; /* Added margin to prevent crowding the home button */
+        }
+
+        .logo {
+            max-width: 450px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* Main Content Container */
+        main {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+            transition: background 0.3s ease;
+            /* Protect contrast with a dark background shadow drops behind the transparent clip text fill */
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); 
+        }
+
+        /* ==========================================================
+           MAIN TAB NAVIGATION BUTTONS
+           ========================================================== */
+        .tab-navigation {
+            width: 100%;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-white); /* Stays white when it is just an outline button */
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-image: var(--gradient-primary) 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0px 1px 3px rgba(0,0,0,0.9); /* Easy to read white text over bright backgrounds */
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .tab-button.active {
+            background: var(--gradient-primary);
+            color: var(--text-active-color); /* Changes color based on the selected theme configuration rules */
+            text-shadow: none; /* Strip shadow when background block is filled */
+            box-shadow: 0 5px 15px rgba(0, 98, 255, 0.1);
+        }
+
+        /* ==========================================================
+           SUB TAB NAVIGATION (Inside General Info)
+           ========================================================== */
+        .sub-navigation {
+            display: flex;
+            width: 100%;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sub-tab-button {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #aaaaaa;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.9);
+        }
+
+        .sub-tab-button:hover {
+            color: var(--color-white);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Active styling for the sub-tabs */
+        .sub-tab-button.active {
+            color: var(--text-active-color); /* Changes to black automatically when bright backgrounds load */
+            text-shadow: none;
+            border: 1px solid transparent;
+            background: var(--gradient-primary);
+        }
+
+        /* ==========================================================
+           TAB CONTENT PANELS
+           ========================================================== */
+        .tab-content, .sub-tab-content {
+            display: none; /* Hidden by default */
+        }
+
+        /* Structural container for the visible tab data */
+        .info-panel {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            text-align: left;
+            line-height: 1.6;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Helpers to toggle visibility */
+        .tab-content.active, .sub-tab-content.active {
+            display: block;
+        }
+
+        /* Formatting inside content boxes */
+        .info-panel h2 {
+            margin-bottom: 1rem;
+            color: var(--color-white);
+            font-size: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .info-panel p {
+            margin-bottom: 1rem;
+            color: #cccccc;
+        }
+
+        .info-panel ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #cccccc;
+        }
+
+        .info-panel li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Form link button styling */
+        .form-button {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-white);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-image: var(--gradient-primary) 1;
+            transition: all 0.3s ease;
+        }
+
+        .form-button:hover {
+            transform: translateY(-2px);
+            background: var(--gradient-primary);
+            color: var(--text-active-color);
+            box-shadow: 0 5px 15px rgba(0, 98, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="home-button">Home</a>
+
+    <header>
+        <img class="logo" src="https://uploads.onecompiler.io/449drxzcm/44rb8u7r9/Blanks%20lights%20black%20no%20bg.png" alt="Blanks Lights Logo">
+    </header>
+
+    <main>
+        <h1>Information</h1>
+
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="switchMainTab(event, 'main-general')">General Info</button>
+            <button class="tab-button" onclick="switchMainTab(event, 'main-help')">Help!</button>
+        </div>
+
+        <div id="main-general" class="tab-content active" style="width: 100%;">
+            
+            <div class="sub-navigation">
+                <button id="btn-christmas" class="sub-tab-button" onclick="switchSubTab(event, 'sub-christmas', 'christmas')">Christmas</button>
+                <button id="btn-halloween" class="sub-tab-button" onclick="switchSubTab(event, 'sub-halloween', 'halloween')">Halloween</button>
+                <button id="btn-other" class="sub-tab-button active" onclick="switchSubTab(event, 'sub-other', 'default')">Credits & Other</button>
+            </div>
+            <div class="info-panel">
+                
+                <div id="sub-christmas" class="sub-tab-content">
+                    <h2>Christmas Light Show Info</h2>
+                    <p>The light show has 1345 lights that's 4035 channels.</p>
+                    <p>To program 1 song three minute long it takes about 6-7 hours.</p>
+                    <p>We have spent more than 50 hours perfecting the show.</p>
+                    <p>The light show takes 39.6 kilowatt hours every year that's 142,560 Kilojoules! For reference a 60 Watt light bulb uses 60 joules every second!</p>
+                    
+                    <h3>When is the show running? </h3>
+                    <p>The music light show runs every half hour first show starts at 15:30 (3:30pm) last show starts at 20:00 (8:00pm)</p>
+                    <p>Each light show lasts about 20 minutes.</p>
+                    <p>The lights will be up from the 1st of dec to 2nd of Jan.</p>
+                    
+                </div>
+
+                <div id="sub-halloween" class="sub-tab-content">
+                    <h2>Halloween Spooktacular Light Show</h2>
+                    <h3>We might not be able to do this halloween as we left it to late but we will still try.</h3>
+                    <p>Our halloween lights and website was supposed to be trick-or-treating this Halloween, but  is currently experiencing a total blackout because our developers got ghosted by the server and the web developers were caught making skeleton puns on their skel-phones. We are operating on a bare bones crew, and this page is still hiding in the dead zone!</p>
+                    
+                    
+                </div>
+
+                <div id="sub-other" class="sub-tab-content active">
+                    <h2>About Blanks Lights and credits</h2>
+                    <p></p>
+                    
+                    <h2>Credits:</h2>
+                    <p><strong>Thomas Blanks:</strong> Owner, Show programming, Planning, setting up hardware, and almost everything else.
+                    <p><strong>Nick </strong>(From How 2 Pixel) Nick has hellped so much for the amazing tutorials and support.
+                    <p><strong>Kyan Delay:</strong> Chief Engineer on some products coming soon! <sub>(hopefully)</sub>
+                    <p><strong>Uro:</strong> Big help on some website stuff and any coding. Thanks ed :)
+                    <p><strong>Kevin Blanks:</strong> Helping set up hardware, ideas, and some other help.
+                    <p><strong>...</strong>
+                    
+                    <P><br></p>
+                    
+                    <h2>Shout outs </h2>
+                    <p>Elliot, Joy, Kyan, Toby, Macie♡, Tahliya, Lisa, Mr N Latif, uro, JOSH, 𝓣𝓸𝓸𝓢𝓹𝓲𝓽𝓮†™✝️🕊️, Strappy_youth2, Chris
+                    <strong>Elliot was here</strong> oh and <b><i>Joy_Dumb</i></b>
+                    <p><sup>(Some people are not real or for a joke)</sup></p>
+                    
+                    <h2>About me</h2>
+                    <p>Hello I am Thomas Blanks i am 15 and I have spent over <strong>50 hours</strong> perfecting the show. I starting making the light show in 2023 when i was just 11 or 12.  </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="main-help" class="tab-content" style="width: 100%;">
+            <div class="info-panel">
+                <h2>Questions, Help and Support</h2>
+                <p>I dont know what you might need help with so submit a feedback form with your question.</p>
+                <a href="https://tally.so/r/jazgRJ" class="form-button" rel="noopener noreferrer">Submit a form</a>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Switch between General Info and Help & Support
+        function switchMainTab(event, tabId) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // Reset theme color to standard style if navigating away to Help tab
+            if (tabId === 'main-help') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                // Restore whichever sub-tab color theme is currently active
+                const activeSubButton = document.querySelector('.sub-tab-button.active');
+                if (activeSubButton) activeSubButton.click();
+            }
+        }
+
+        // Switch between smaller Christmas, Halloween, and Other sub-tabs
+        function switchSubTab(event, subTabId, themeName) {
+            const contents = document.querySelectorAll('.sub-tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.sub-tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            document.getElementById(subTabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // Apply color transformation rule based on themeName string passed
+            if (themeName === 'default') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', themeName);
+            }
+        }
+        
+        // Run once on load to force initialize the "Other" default theme settings
+        document.documentElement.removeAttribute('data-theme');
+    </script>
+
+</body>
+</html>
