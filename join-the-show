@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Join the Show | Blanks Lights💡</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000000;
+            font-family: sans-serif;
+            overflow: hidden;
+            gap: 1.5rem;
+        }
+
+        :root {
+            --bg-dark: #0b0c10;
+            --color-1: #0062ff; 
+            --color-2: #b700ff; 
+            --color-white: #ffffff;
+            --color-blue: #0062ff;
+            --color-purple: #b700ff;
+            --text-active-color: var(--color-white); 
+            --gradient-primary: linear-gradient(135deg, var(--color-1), var(--color-2));
+        }
+
+        /* Button Layout Styles */
+        .links-container {
+            width: auto;
+            min-width: 250px;
+            display: none; /* Controlled via JS state engine */
+            flex-direction: column;
+            gap: 1.25rem;
+            z-index: 2;
+            margin-top: 2rem; /* Adds clean spacing below the text */
+        }
+
+        .custom-button {
+            display: block;
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-white);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-image: var(--gradient-primary) 1;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .custom-button:hover {
+            transform: translateY(-3px);
+            background: var(--gradient-primary);
+            box-shadow: 0 10px 20px rgba(0, 98, 255, 0.2), 0 10px 20px rgba(183, 0, 255, 0.2);
+        }
+
+        .custom-button:active {
+            transform: translateY(-1px);
+        }
+
+        /* Nav Action Elements */
+        .nav-button {
+            position: absolute;
+            top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-white);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-image: var(--gradient-primary) 1;
+            transition: all 0.3s ease;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .home-button { left: 1.5rem; }
+        .menu-button { right: 1.5rem; }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            background: var(--gradient-primary);
+            color: var(--text-active-color);
+            box-shadow: 0 5px 10px rgba(0, 98, 255, 0.2);
+        }
+
+        @keyframes glowBreath {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(0, 30, 255, 0.6), 0 0 20px rgba(115, 0, 255, 0.6);
+                filter: brightness(1.5);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(0, 30, 255, 1), 0 0 60px rgba(150, 0, 255, 1);
+                filter: brightness(1);
+            }
+        }
+
+        .gradient-button {
+            background: linear-gradient(135deg, #0062ff, #b700ff);
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 15px 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 30, 255, 0.6), 0 0 20px rgba(115, 0, 255, 0.6);
+            animation: glowBreath 4s ease-in-out infinite;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.5s ease,
+                        box-shadow 0.3s ease, filter 0.3s ease;
+            z-index: 2;
+        }
+
+        .gradient-button:hover {
+            box-shadow: 0 0 40px rgba(0, 30, 255, 1), 0 0 80px rgba(115, 0, 255, 1);
+            transform: scale(1.05);
+            filter: brightness(1.2);
+            animation-play-state: paused; 
+        }
+
+        .fade-out {
+            transform: scale(3); 
+            opacity: 0;          
+            pointer-events: none; 
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #0062ff, #b700ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            font-size: 36px;
+            margin: 0;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 30, 255, 0.6), 0 0 20px rgba(115, 0, 255, 0.6);
+            filter: brightness(1.5);
+        }
+
+        .sub-text {
+            color: white;
+            font-size: 24px;
+            margin-top: 15px;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        #videoContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 1;
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Settings Sandbox Block */
+        #testMenu {
+            position: fixed;
+            top: 5rem;
+            right: 1.5rem;
+            background: rgba(11, 12, 16, 0.95);
+            border: 2px solid #b700ff;
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 100;
+            display: none;
+            width: 280px;
+            box-shadow: 0 0 20px rgba(183, 0, 255, 0.4);
+        }
+
+        #testMenu h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-bottom: 2px solid rgba(255,255,255,0.15);
+            padding-bottom: 8px;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Menu Section Subheadings */
+        .menu-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #b700ff;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 3px;
+        }
+
+        .menu-group {
+            margin-bottom: 12px;
+        }
+
+        .menu-group label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        .menu-group select, .menu-group input, .menu-group button {
+            width: 100%;
+            padding: 6px;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .menu-group button {
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+
+        .menu-group button:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Copy and paste this code anywhere inside your <body> tag -->
+<div id="timer-popup-overlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    font-family: system-ui, -apple-system, sans-serif;
+">
+    <div style="
+        background-color: #0b0c10;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 24px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    ">
+        <!-- Warning Icon & Message -->
+        <div style="font-size: 32px; margin-bottom: 12px;">⚠️</div>
+        <p style="
+            color: #ffffff;
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 0 0 24px 0;
+        ">
+            Please note the timings may not be correct.
+        </p>
+
+        <!-- Action Buttons -->
+<div style="
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+">
+    <!-- Countdown Button (Opens in New Tab - Bypasses Automated Redirect Flag) -->
+    <a href="countdown" target="_blank" rel="noopener noreferrer" style="
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #ffffff;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        flex: 1;
+        text-decoration: none;
+        display: inline-block;
+        box-sizing: border-box;
+        line-height: 1.2;
+    " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+        Countdown
+    </a>
+
+    <!-- OK Button (Closes Popup Only) -->
+    <button onclick="document.getElementById('timer-popup-overlay').style.display='none'" style="
+        background: linear-gradient(135deg, #0062ff, #b700ff);
+        border: none;
+        color: #ffffff;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        flex: 1;
+        box-shadow: 0 4px 12px rgba(0, 98, 255, 0.3);
+    ">
+        OK
+    </button>
+</div>
+
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+  
+    <a href="/" class="nav-button home-button">Home</a>
+    <div class="nav-button menu-button" onclick="toggleMenu()">Menu</div>
+
+    <button id="joinBtn" class="gradient-button" onclick="startTransition(this)">
+        Join the show!
+    </button>
+
+    <div id="videoContainer">
+        <video hidden id="lightvideo" playsinline muted></video>
+        <div id="countdownDisplay" hidden style="z-index: 2;">
+            <div class="gradient-text" id="mainStatus">Calculating...</div>
+            <div class="sub-text" id="timeRemaining">00m 00s</div>
+            
+            <div id="linksPanel" class="links-container">
+                <a href="countdown" class="custom-button">Light Show Countdown</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="testMenu">
+        <h3>Menu</h3>
+        
+        <div class="menu-section-title">Audio Settings</div>
+        <div class="menu-group">
+            <button id="muteToggleBtn" onclick="toggleMute()">Unmute Audio 🔇</button>
+        </div>
+        
+        <div class="menu-section-title">Testing Functions</div>
+        <div class="menu-group">
+            <label>Force Season Condition</label>
+            <select id="testSeason" onchange="applyTestSettings()">
+                <option value="auto">System Calendar (Auto)</option>
+                <option value="halloween">Force Halloween</option>
+                <option value="christmas">Force Christmas</option>
+                <option value="none">Force Off-Season</option>
+            </select>
+        </div>
+        <div class="menu-group">
+            <label>Loop Interval (Minutes)</label>
+            <input type="number" id="testInterval" value="30" min="1" onchange="applyTestSettings()">
+        </div>
+        <div class="menu-group">
+            <label>Simulate Current Time</label>
+            <input type="time" id="testTime" onchange="applyTestSettings()">
+            <span style="font-size:10px; color:#cf0000; cursor:pointer; display:block; margin-top:4px;" onclick="clearTimeOverride()">Clear time lock</span>
+        </div>
+    </div>
+
+<script>
+    const HALLOWEEN_SRC = "https://github.com/thomasgb2424/Blanks-Lights-Site-Media/raw/46eee07f59d96f172422571925db017b59ba3ab8/MobilePhonesTest1pxAuidio.mp4"; 
+    const CHRISTMAS_SRC = "https://github.com/thomasgb2424/Blanks-Lights-Site-Media/raw/cf3df6abee71782a5b3b6b3600f05a4f4e61ffef/MobilePhoneTest2Audio.mp4";
+
+    let config = {
+        seasonOverride: "auto",
+        intervalMinutes: 30,
+        timeOverride: null
+    };
+
+    let runtimeEngineInterval = null;
+    const joinBtn = document.getElementById("joinBtn");
+    const vid = document.getElementById("lightvideo");
+    const container = document.getElementById("videoContainer");
+    const countdownDisplay = document.getElementById("countdownDisplay");
+    const linksPanel = document.getElementById("linksPanel");
+    const muteToggleBtn = document.getElementById("muteToggleBtn");
+
+    function toggleMenu() {
+        const menu = document.getElementById("testMenu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function toggleMute() {
+        vid.muted = !vid.muted;
+        if (vid.muted) {
+            muteToggleBtn.innerText = "Unmute Audio 🔇";
+            muteToggleBtn.style.background = "#222";
+        } else {
+            muteToggleBtn.innerText = "Mute Audio 🔊";
+            muteToggleBtn.style.background = "var(--gradient-primary)";
+        }
+    }
+
+    function applyTestSettings() {
+        config.seasonOverride = document.getElementById("testSeason").value;
+        config.intervalMinutes = parseInt(document.getElementById("testInterval").value) || 30;
+        
+        const timeVal = document.getElementById("testTime").value;
+        if(timeVal) {
+            const [hours, minutes] = timeVal.split(':');
+            config.timeOverride = { hours: parseInt(hours), minutes: parseInt(minutes) };
+        }
+        
+        if (container.style.display === "flex") {
+            evaluateStateEngine();
+        }
+    }
+
+    function clearTimeOverride() {
+        document.getElementById("testTime").value = "";
+        config.timeOverride = null;
+        if (container.style.display === "flex") evaluateStateEngine();
+    }
+
+    function getWorkingTime() {
+        let d = new Date();
+        if(config.timeOverride !== null) {
+            d.setHours(config.timeOverride.hours);
+            d.setMinutes(config.timeOverride.minutes);
+        }
+        return d;
+    }
+
+    function determineActiveSeason(now) {
+        if(config.seasonOverride !== "auto") return config.seasonOverride;
+
+        const month = now.getMonth();
+        const date = now.getDate();
+        
+        if (month === 9 && date >= 23 && date <= 31) return "halloween";
+        if ((month === 11 && date >= 1) || (month === 0 && date <= 2)) return "christmas";
+        return "none";
+    }
+
+    function calculateNextTargetShow(now) {
+        let target = new Date(now);
+        target.setSeconds(0);
+        target.setMilliseconds(0);
+
+        let interval = config.intervalMinutes;
+        let currentMinutes = target.getMinutes();
+        let nextMinutes = Math.ceil((currentMinutes + 1) / interval) * interval;
+        
+        if (nextMinutes >= 60) {
+            target.setHours(target.getHours() + 1);
+            target.setMinutes(0);
+        } else {
+            target.setMinutes(nextMinutes);
+        }
+        return target;
+    }
+
+    function startTransition(element) {
+        element.classList.add('fade-out');
+        
+        setTimeout(() => {
+            element.remove();
+            container.style.display = "flex";
+            evaluateStateEngine();
+            runtimeEngineInterval = setInterval(evaluateStateEngine, 1000);
+        }, 500);
+    }
+
+    function evaluateStateEngine() {
+        const now = getWorkingTime();
+        const season = determineActiveSeason(now);
+
+        if (season === "none") {
+            vid.style.display = "none";
+            vid.pause();
+            countdownDisplay.hidden = false;
+            document.getElementById("mainStatus").innerText = "Out of Season";
+            document.getElementById("timeRemaining").innerText = "Wait until next Halloween or Christmas!";
+            
+            if(linksPanel) linksPanel.style.display = "flex";
+            return;
+        }
+
+        if(linksPanel) linksPanel.style.display = "none";
+
+        const correctSrc = (season === "halloween") ? HALLOWEEN_SRC : CHRISTMAS_SRC;
+        if(vid.src !== correctSrc) {
+            vid.src = correctSrc;
+            vid.load();
+        }
+
+        const nextShow = calculateNextTargetShow(now);
+        const prevShow = new Date(nextShow.getTime() - (config.intervalMinutes * 60000));
+        
+        const offsetSeconds = (now.getTime() - prevShow.getTime()) / 1000;
+        const videoDuration = vid.duration || 60; 
+
+        if (offsetSeconds < videoDuration) {
+            countdownDisplay.hidden = true;
+            if (vid.style.display !== "block") {
+                vid.style.display = "block";
+                vid.currentTime = offsetSeconds;
+                vid.play().catch(e => console.log("Awaiting manual input focus override clear."));
+            }
+            
+            if (Math.abs(vid.currentTime - offsetSeconds) > 1.5) {
+                vid.currentTime = offsetSeconds;
+            }
+        } else {
+            vid.style.display = "none";
+            vid.pause();
+            countdownDisplay.hidden = false;
+
+            const timeString = nextShow.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById("mainStatus").innerText = `Next show starts at ${timeString}`;
+
+            const diff = nextShow - now;
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            document.getElementById("timeRemaining").innerText = `Starting in ${minutes}m ${seconds}s`;
+        }
+    }
+
+    vid.addEventListener('ended', () => {
+        evaluateStateEngine();
+    });
+</script>
+    <!-- ... Your existing content and other tags ... -->
+
+    <script>
+        // Intercept page close, refresh, or navigation
+        window.addEventListener('beforeunload', function (e) {
+            e.preventDefault();
+            e.returnValue = ''; // Triggers the generic browser warning
+        });
+    </script>
+</body>
+</html>
+
+</body>
+</html>
