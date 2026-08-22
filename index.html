@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <link rel="icon" type="image/png" href="https://uploads.onecompiler.io/449drxzcm/44rb8u7r9/BL%20light%20icon%2064x64%20no%20bg.png">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blanks Lights | Home</title>
+    <style>
+        /* Base Reset & Variables */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --bg-dark: #0b0c10;
+            --color-blue: #0062ff;
+            --color-purple: #b700ff;
+            --color-white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, var(--color-blue), var(--color-purple));
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--color-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+
+        /* Header / Logo Layout */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            max-width: 450px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* Main Content Container */
+        main {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        /* Links/Buttons Container */
+        .links-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* Interactive Modern Buttons */
+        .custom-button {
+            display: block;
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-white);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid transparent;
+            border-image: var(--gradient-primary) 1;
+            border-radius: 0px; /* Note: Border-image forces sharp corners. */
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Alternative Rounded-Corner Gradient Button Style */
+        /* Un-comment the section below if you prefer rounded buttons instead of sharp border-gradients */
+        /*
+        .custom-button {
+            display: block;
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-white);
+            text-decoration: none;
+            background: linear-gradient(var(--bg-dark), var(--bg-dark)) padding-box, var(--gradient-primary) border-box;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        */
+
+        .custom-button:hover {
+            transform: translateY(-3px);
+            background: var(--gradient-primary);
+            box-shadow: 0 10px 20px rgba(0, 98, 255, 0.2), 0 10px 20px rgba(183, 0, 255, 0.2);
+        }
+
+        .custom-button:active {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Centered Logo -->
+    <header>
+        <img class="logo" src="https://uploads.onecompiler.io/449drxzcm/44rb8u7r9/Blanks%20lights%20black%20no%20bg.png">
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Welcome to Blanks Lights</h1>
+
+        <!-- Navigation Links Grid -->
+        <div class="links-container">
+            
+            <!-- BUTTON -->
+            <a href="https://blanks-lights-join.oneapp.dev/"  class="custom-button">
+                Join the show
+            </a>
+            
+            <!-- BUTTON -->
+            <a href="https://gofund.me/2f451b9ae" target="_blank" class="custom-button">
+                Support the show | GoFundMe
+            </a>
+            
+             <!-- BUTTON -->
+            <a href="https://blanks-lights-info.oneapp.dev/"  class="custom-button">
+                Information
+            </a>
+            
+             <!-- BUTTON -->
+            <a href="https://blanks-lights-countdown.oneapp.dev/"  class="custom-button">
+                Countdown To Next Light Show
+            </a>
+            
+             <!-- BUTTON -->
+            <a href="https://tally.so/r/jazgRJ"  class="custom-button">
+                Questions & Feedback
+            </a>
+
+        </div>
+    </main>
+
+</body>
+
+<script>
+window.TallyConfig = {
+  "formId": "jazgRJ",
+  "popup": {
+    "emoji": {
+      "text": "👋",
+      "animation": "wave"
+    },
+    "open": {
+      "trigger": "time",
+      "ms": 5000
+    },
+    "overlay": true,
+    "autoClose": 2000,
+    "doNotShowAfterSubmit": true
+  }
+};
+</script>
+
+<script async src="https://tally.so/widgets/embed.js"></script>
+
+</html>
