@@ -5,15 +5,15 @@
     <priority>1.00</priority>
   </url>
   <url>
-    <loc>https://blanks-lightsgithub.io/join-the-show.html</loc>
+    <loc>https://blanks-lights.github.io/join-the-show.html</loc>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://blanks-lightsgithub.io/information.html</loc>
+    <loc>https://blanks-lights.github.io/information.html</loc>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://blanks-lightsgithub.io/countdown.html</loc>
+    <loc>https://blanks-lights.github.io/countdown.html</loc>
     <priority>0.80</priority>
   </url>
 </urlset>
