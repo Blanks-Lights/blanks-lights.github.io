@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="christmas">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,12 +30,6 @@
         --text-active-color: #000000;
     }
 
-    /* HALLOWEEN THEME (Orange, Purple, & Green) */
-    [data-theme="halloween"] {
-        --gradient-primary: linear-gradient(135deg, #fc8800, #6900fc, #00fc00);
-        --text-active-color: #000000;
-    }
-
     body {
         background-color: var(--bg-dark);
         color: var(--color-white);
@@ -62,14 +56,6 @@
         height: auto;
         object-fit: contain;
         margin-bottom: 1.5rem;
-    }
-
-    /* Container for placing buttons next to each other */
-    .season-buttons-container {
-        display: flex;
-        gap: 1rem;
-        width: 100%;
-        max-width: 450px;
     }
 
     main {
@@ -185,11 +171,6 @@
 
     <header>
         <img class="logo" src="https://uploads.onecompiler.io/449drxzcm/44rdv8wdj/Blanks%20lights%20black%20no%20bg.png" alt="Blanks Lights Logo">
-        
-        <div class="season-buttons-container">
-            <button class="custom-button" id="halloweenButton" onclick="setThemeAndSeason('halloween')">Halloween</button>
-            <button class="custom-button" id="christmasButton" onclick="setThemeAndSeason('christmas')">Christmas</button>
-        </div>
     </header>
 
     <main>
@@ -222,14 +203,12 @@
     </main>
 
 <script>
-    let selectedSeason = null;
     let isCalculating = false;
     let calcTimeout = null;
 
     function triggerCalculationDelay(callback) {
         isCalculating = true;
         
-        // Temporarily reset screen text to calculating state
         document.getElementById("show-title").textContent = "Loading Show Times...";
         document.getElementById("status-text").textContent = "Calculating next run time...";
         document.getElementById("days").textContent = "00";
@@ -237,67 +216,31 @@
         document.getElementById("minutes").textContent = "00";
         document.getElementById("seconds").textContent = "00";
 
-        // Clear any existing active timer to prevent overlap
         if (calcTimeout) clearTimeout(calcTimeout);
 
-        // Resume active countdown after half a second (500ms)
         calcTimeout = setTimeout(function() {
             isCalculating = false;
             if (callback) callback();
         }, 500);
     }
 
-    function setThemeAndSeason(seasonName) {
-        if (selectedSeason === seasonName) {
-            selectedSeason = null;
-            document.documentElement.removeAttribute('data-theme');
-            document.getElementById("halloweenButton").classList.remove("active");
-            document.getElementById("christmasButton").classList.remove("active");
-        } else {
-            selectedSeason = seasonName;
-            document.documentElement.setAttribute('data-theme', seasonName);
-            
-            if (seasonName === 'halloween') {
-                document.getElementById("halloweenButton").classList.add("active");
-                document.getElementById("christmasButton").classList.remove("active");
-            } else if (seasonName === 'christmas') {
-                document.getElementById("christmasButton").classList.add("active");
-                document.getElementById("halloweenButton").classList.remove("active");
-            }
-        }
-        
-        // Trigger 0.5s calculation delay on button click
-        triggerCalculationDelay(updateCountdown);
-    }
-
-    function getNextTarget(seasonName) {
+    function getNextTarget() {
         const now = new Date();
         const currentYear = now.getFullYear();
         let target = null;
-        let title = "";
+        let title = "Christmas Light Show";
         let status = "";
 
-        if (seasonName === "halloween") {
-            title = "Halloween Light Show";
-            target = new Date(currentYear, 9, 23, 15, 30, 0); // Oct 23
-            if (now > target) {
-                target.setFullYear(currentYear + 1);
-            }
-            status = "Starts on 23rd October at 15:30.";
-        } else if (seasonName === "christmas") {
-            title = "Christmas Light Show";
-            target = new Date(currentYear, 11, 1, 15, 30, 0); // Dec 1
-            if (now > target) {
-                target.setFullYear(currentYear + 1);
-            }
-            status = "Starts on 1st December at 15:30.";
+        target = new Date(currentYear, 11, 1, 15, 30, 0); // Dec 1
+        if (now > target) {
+            target.setFullYear(currentYear + 1);
         }
+        status = "Starts on 1st December at 15:30.";
 
         return { target, title, status };
     }
 
     function updateCountdown() {
-        // Do not update the DOM while the 0.5s calculation delay is active
         if (isCalculating) return;
 
         const now = new Date();
@@ -307,67 +250,49 @@
         let showName = "";
         let statusString = "";
 
-        if (selectedSeason) {
-            const data = getNextTarget(selectedSeason);
-            targetTime = data.target;
-            showName = data.title;
-            statusString = data.status;
-        } else {
-            function checkRange(startMonth, startDay, endMonth, endDay, targetYear) {
-                let start = new Date(targetYear, startMonth - 1, startDay, 0, 0, 0);
-                let end = new Date(targetYear, endMonth - 1, endDay, 23, 59, 59);
-                if (end < start) end.setFullYear(end.getFullYear() + 1);
-                return { start, end };
-            }
+        function checkRange(startMonth, startDay, endMonth, endDay, targetYear) {
+            let start = new Date(targetYear, startMonth - 1, startDay, 0, 0, 0);
+            let end = new Date(targetYear, endMonth - 1, endDay, 23, 59, 59);
+            if (end < start) end.setFullYear(end.getFullYear() + 1);
+            return { start, end };
+        }
 
-            let halloween = checkRange(10, 23, 10, 31, currentYear);
-            let christmas = checkRange(12, 1, 1, 2, currentYear);
-            let christmasPrior = checkRange(12, 1, 1, 2, currentYear - 1);
+        let christmas = checkRange(12, 1, 1, 2, currentYear);
+        let christmasPrior = checkRange(12, 1, 1, 2, currentYear - 1);
 
-            let activeSeason = null;
-            if (now >= halloween.start && now <= halloween.end) activeSeason = "Halloween";
-            else if (now >= christmas.start && now <= christmas.end) activeSeason = "Christmas";
-            else if (now >= christmasPrior.start && now <= christmasPrior.end) activeSeason = "Christmas";
+        let activeSeason = null;
+        if (now >= christmas.start && now <= christmas.end) activeSeason = "Christmas";
+        else if (now >= christmasPrior.start && now <= christmasPrior.end) activeSeason = "Christmas";
 
-            if (activeSeason) {
-                showName = activeSeason + " Light Show";
-                let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 30, 0);
-                let endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0);
-                
-                if (now < startOfToday) {
-                    targetTime = startOfToday;
-                    statusString = "Shows run every 30 minutes from 15:30 to 20:00.";
-                } else if (now > endOfToday) {
-                    let tomorrow = new Date(now);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    targetTime = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 15, 30, 0);
-                    statusString = "Shows have ended for tonight. Next run starts tomorrow at 15:30.";
-                } else {
-                    let nextSlot = new Date(now);
-                    nextSlot.setSeconds(0);
-                    nextSlot.setMilliseconds(0);
-                    if (nextSlot.getMinutes() < 30) nextSlot.setMinutes(30);
-                    else { nextSlot.setHours(nextSlot.getHours() + 1); nextSlot.setMinutes(0); }
-                    targetTime = nextSlot;
-                    statusString = `Shows loop every half hour until 20:00. Next slot: ${targetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-                }
+        if (activeSeason) {
+            showName = activeSeason + " Light Show";
+            let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 30, 0);
+            let endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0);
+            
+            if (now < startOfToday) {
+                targetTime = startOfToday;
+                statusString = "Shows run every 30 minutes from 15:30 to 20:00.";
+            } else if (now > endOfToday) {
+                let tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                targetTime = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 15, 30, 0);
+                statusString = "Shows have ended for tonight. Next run starts tomorrow at 15:30.";
             } else {
-                let nextHalloween = checkRange(10, 23, 10, 31, currentYear).start;
-                let nextChristmas = checkRange(12, 1, 1, 2, currentYear).start;
-                
-                if (now > nextHalloween) nextHalloween.setFullYear(nextHalloween.getFullYear() + 1);
-                if (now > nextChristmas) nextChristmas.setFullYear(nextChristmas.getFullYear() + 1);
-
-                if (nextHalloween < nextChristmas) {
-                    showName = "Halloween Light Show Season";
-                    targetTime = new Date(nextHalloween.setHours(15, 30, 0));
-                    statusString = "Starts on 23rd October at 15:30.";
-                } else {
-                    showName = "Christmas Light Show Season";
-                    targetTime = new Date(nextChristmas.setHours(15, 30, 0));
-                    statusString = "Starts on 1st December at 15:30.";
-                }
+                let nextSlot = new Date(now);
+                nextSlot.setSeconds(0);
+                nextSlot.setMilliseconds(0);
+                if (nextSlot.getMinutes() < 30) nextSlot.setMinutes(30);
+                else { nextSlot.setHours(nextSlot.getHours() + 1); nextSlot.setMinutes(0); }
+                targetTime = nextSlot;
+                statusString = `Shows loop every half hour until 20:00. Next slot: ${targetTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
             }
+        } else {
+            let nextChristmas = checkRange(12, 1, 1, 2, currentYear).start;
+            if (now > nextChristmas) nextChristmas.setFullYear(nextChristmas.getFullYear() + 1);
+
+            showName = "Christmas Light Show Season";
+            targetTime = new Date(nextChristmas.setHours(15, 30, 0));
+            statusString = "Starts on 1st December at 15:30.";
         }
 
         document.getElementById("show-title").textContent = showName;
